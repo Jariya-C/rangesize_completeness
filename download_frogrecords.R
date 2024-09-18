@@ -4,7 +4,7 @@
 ### Script for download data from ALA using galah package
 ### Part of the methods for the manuscript:
 ### How well do we understand species’ geographic range size?: 
-### A case study of Australia’s frog
+### A case study of Australia’s frogs
 ###
 ### Jariya Chanachai (jariya.chanachai@hdr.mq.edu.au)
 ################################################################################
