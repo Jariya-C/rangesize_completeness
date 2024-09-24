@@ -40,6 +40,7 @@ ibra_shp <- st_read("data/IBRA7_regions/ibra7_regions.shp")
 # Select relevant columns 
 allfrogdata <- as.data.frame(frog_occ_cleaned_final[,c(1:15,39,53:56)])
 
+###############################################################################
 ### Distribution of records and distribution of sampling efforts across Australia
 
 
@@ -67,8 +68,8 @@ plot_distribution <- ggplot() +
   )
 
 ggsave(plot = plot_distribution, "result/fig4_distribution_map.png", dpi = 1200, width = 10, height = 6)
-###
 
+###
 ### Spatial join occurrences with bioregion and calculate record density
 
 ibra_dataframe <- as.data.frame(ibra_shp)
@@ -503,7 +504,7 @@ cs_spatialcov <- na.omit(spatialcov_bias$citizenscience) +
   labs(x = "Longitude", y = "Latitude") 
 
 
-## Assess spatial-temporal bias for the entire dataset
+### Assess spatial-temporal bias for the entire dataset
 
 alldata_spatialcov_bias <- assessSpatialCov(dat = frogdata_subset,
                                             periods = periods,

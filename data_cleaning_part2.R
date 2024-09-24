@@ -318,55 +318,6 @@ save(frog_occ_cleaned_final, file = "data/frog_occ_cleaned_final_with_datatype_2
 # clean dataset = frog_occ_cleaned_final
 # data cleaning completed
 ################################################################################
-
-### Plot species distribution for clean data
-
-unique_spp <- unique(frog_occ_cleaned_final$species)
-
-records_by_spp <- frog_occ_cleaned_final %>% group_by(species) %>% summarise(records = n())
-
-### This plots distribution map for each species - with clean dataset
-### WARNING - This loop will take time to run ###
-
-for(i in 1:length(unique_spp)) {
-  
-  species <- gsub(" ","_", unique_spp[i])
-  spp_records <- subset(records_by_spp, species == unique_spp[i])
-  
-  # load species map for species i. Data source = Australian Frog Atlas (AFA)
-  species_map <- st_read(paste0("Data/australian_frog_atlas_frogid/species_map_v2_shp/", species,".shp"))
-  # Subset the data for the current species
-  occurrences <- frog_occ_cleaned_final[frog_occ_cleaned_final$species == unique_spp[i], ]
-  
-  occurrence_map <- ggplot() + 
-    geom_sf(data = ibra_shp, fill = "#FBFBEF", linewidth=0.1, colour = "black")+ 
-    xlab("Longitude") + ylab("Latitude") +
-    geom_point(data = (occurrences), 
-               aes(x =decimalLongitude, y=decimalLatitude, 
-                   colour = factor(dataprovider)),
-               #shape = ifelse(occurrences$range_test =="TRUE",  "within range", "outliers")),  #color = ifelse(abs(x) < 1, "within range", "outliers")))
-               size = 1) +
-    scale_shape_manual(values = c(4, 1)) +
-    geom_sf(data = species_map, alpha =0.2, fill = NA, colour = "red") +
-    coord_sf(expand=TRUE, xlim = c(110,175), ylim = c(-45,-10)) + #limit extent to Oceania
-    guides(colour = guide_legend(override.aes = list(size = 3)))+
-    guides(shape = guide_legend(override.aes = list(size = 3)))+
-    annotate("text", label = unique_spp[i], x = 125, y = -10, size =6,  fontface = 'italic') +
-    annotate("text", label = bquote("total records = " ~.(spp_records$records)), x = 125, y = -45, size =6) +
-    #annotate("text", label = bquote("records within range = " ~.(spp_records$cleaned_records)), x = 165, y = -45, size =6) +
-    theme_classic() +
-    theme(legend.position = c(0.9,0.8),
-          legend.title = element_blank(),
-          legend.text = element_text(colour="black", size =15),
-          legend.key = element_rect(colour = NA, fill = NA),
-          legend.key.size = unit(1,"cm"),
-          axis.title = element_text(size = 17),
-          axis.text = element_text(size = 15),
-          panel.background = element_blank())
-  ggsave(plot = occurrence_map, paste0("Results/frog_species_distribution_cleaned_with_afa_frogidmap_20240702/",unique_spp[i],"_distribution.png"), dpi = 1200, width = 12, height = 6)
-}
-#
-#
 ################# End of Data Processing: Part 1 ###############################
 ###################### End of data cleaning ####################################
 ################################################################################

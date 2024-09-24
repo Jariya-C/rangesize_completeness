@@ -8,9 +8,7 @@
 ###
 ### Jariya Chanachai (jariya.chanachai@hdr.mq.edu.au)
 ################################################################################
-###
-### Exact same dataset can be directly downloaded from ALA 
-### Using the links (DOIs)provided
+### Exact same dataset can be directly downloaded from ALA using the links provided
 ### See rows 146-152 
 ###
 ################################################################################ 
@@ -147,6 +145,6 @@ save(ala_all_rawdata, file = "data/ala_frog_occurrences_raw_20231017.Rda" )
 # c)	third download - spp_download_list[121:180], occurrences = 268,351 records (https://doi.ala.org.au/doi/abd60ea2-f837-4f21-afdc-a5d41340c820; https://doi.org/10.26197/ala.abd60ea2-f837-4f21-afdc-a5d41340c820).
 # d)	fourth download - spp_download_list[181:237], occurrences = 121,255 records (https://doi.ala.org.au/doi/d14ae6e3-c8b6-4d7a-bb75-3dbe25e9a753; https://doi.org/10.26197/ala.d14ae6e3-c8b6-4d7a-bb75-3dbe25e9a753).
 # e)	spp_download_list2, 5 synonyms, occurrences = 1990 records (https://doi.ala.org.au/doi/42348355-ed0e-40ac-853f-98fa30a2d5ac; https://doi.org/10.26197/ala.42348355-ed0e-40ac-853f-98fa30a2d5ac).
-### Copy and paste links to download
+### copy and paste links to download
 ################### End of code for downloading data ###########################
 ################################################################################
