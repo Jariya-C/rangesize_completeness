@@ -44,6 +44,26 @@ allfrogdata <- as.data.frame(frog_occ_cleaned_final[,c(1:15,39,53:56)])
 ### Distribution of records and distribution of sampling efforts across Australia
 
 
+state_centroids <- aus %>% 
+  st_centroid() %>% 
+  st_coordinates() %>% 
+  as.data.frame() %>%
+  mutate(state_name = aus$NAME) 
+
+
+state_centroids <- state_centroids[c(1:8),]  # Remove Other Territories
+# Use acronyms for the states
+state_centroids$state_name <- gsub("New South Wales", "NSW", 
+                              gsub("Victoria", "VIC", 
+                              gsub("Queensland", "QLD",
+                              gsub("South Australia", "SA",
+                              gsub("Western Australia", "WA",
+                              gsub("Tasmania", "TAS", 
+                              gsub("Northern Territory", "NT", 
+                              gsub("Australian Capital Territory", "ACT", 
+                                   state_centroids$state_name))))))))
+
+
 plot_distribution <- ggplot() + 
   geom_sf(data = aus, fill = "#FBFBEF", size=NA) +
   geom_point(data = subset(allfrogdata, datatype == "non_citizenscience"), 
@@ -54,6 +74,9 @@ plot_distribution <- ggplot() +
              aes(x =decimalLongitude, y=decimalLatitude, 
                  colour="Citizen science data"),
              size = 0.00001) +
+  geom_text(data = state_centroids, 
+            aes(x = X, y = Y, label = state_name), 
+            size = 4, color = "black", fontface = "bold") +  # Add state names with geom_text
   annotation_scale()+
   coord_sf(expand = TRUE,
            xlim =  c(110, 155), 
@@ -67,7 +90,7 @@ plot_distribution <- ggplot() +
         legend.key.size = unit(0.6,"cm")
   )
 
-ggsave(plot = plot_distribution, "result/fig4_distribution_map.png", dpi = 1200, width = 10, height = 6)
+ggsave(plot = plot_distribution, "result/fig4_distribution_map_withstatenames.png", dpi = 1200, width = 10, height = 6)
 
 ###
 ### Spatial join occurrences with bioregion and calculate record density
