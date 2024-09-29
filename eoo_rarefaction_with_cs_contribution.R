@@ -280,7 +280,14 @@ df_cs_contribution <- left_join(frogs_eoo_df, df_cs_contribution, by = "species"
 save(df_cs_contribution, file = "result/eoo_completeness_and_cs_contribution_table_final.Rda")
 write.csv(df_cs_contribution, file = "result/eoo_completeness_and_cs_contribution_final.csv", row.names = FALSE)
 
+mean_cs_contribtuion <- df_cs_contribution %>% 
+  subset(totalrecords >= 100) %>%
+  get_summary_stats(mean_cs.contribution)
 
+# A tibble: 1 × 13
+#variable                 n   min   max median    q1    q3   iqr   mad  mean    sd    se    ci
+#<fct>                <dbl> <dbl> <dbl>  <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
+#  1 mean_cs.contribution   138     0   100   2.99 0.061  15.9  15.8  4.44  18.0  30.9  2.63   5.2
 
 hist_cs_eooest <- ggplot(subset(df_cs_contribution, totalrecords >=100), aes(x=mean_cs.contribution/100)) + 
   geom_histogram(binwidth = 0.05, color = "black", fill ="grey", lwd =0.2) +

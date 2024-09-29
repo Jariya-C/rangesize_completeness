@@ -44,7 +44,7 @@ aoo_eoo_joined_df <- aoo_eoo_joined %>% select("species", "totalrecords","cs_rec
   
 save(aoo_eoo_joined_df, file = "result/aoo_eoo_estimates_and_completeness_df_with_cs_contribution_allspp.Rda")
 
-aoo_eoo_subset <- aoo_eoo_joined %>% 
+aoo_eoo_subset <- aoo_eoo_joined_df %>% 
   subset(totalrecords >=100)
 
 aoo_eoo_subset %>%  
@@ -106,15 +106,15 @@ aoo_eoo_cor
 
 
 cor_plot <- ggplot(data = aoo_eoo_subset, aes(x = mean_mcp_completeness, y =completeness))+ 
-  geom_point()+
+  geom_point(size = 1.5)+
   geom_smooth()+
   labs(x = "EOO completeness", y = "AOO completeness")+
   theme_classic()+
-  theme(axis.title = element_text(size = 17),
-      axis.text = element_text(size = 15),
+  theme(axis.title = element_text(size = 19),
+      axis.text = element_text(size = 17),
       panel.background = element_blank())
 
-ggsave(plot = cor_plot, "result/fig6_aoo_eoo_correlation_plot.png", dpi = 600, width = 12, height = 8)
+ggsave(plot = cor_plot, "result/fig6_aoo_eoo_correlation_plot_v2.png", dpi = 600, width = 12, height = 8)
 
 ################################################################################
 ##### Plotting
@@ -207,13 +207,13 @@ cs_aooc_vs_cs_proportion <- ggplot(data = aoo_eoo_subset, aes(x = cs_proportion,
   geom_smooth()+
   #geom_smooth(method = "loess")+
   #scale_x_log10() +
-  labs(x = "Proportion of citizen science records", y = "Proprotion of citizen science contribution to AOO completeness")+
+  labs(x = "Proportion of citizen science records", y = "Proportion of citizen science contribution to AOO completeness")+
   theme_classic()+
   theme(axis.title = element_text(size = 17),
         axis.text = element_text(size = 15),
         panel.background = element_blank())
 
-ggsave(plot = cs_aooc_vs_cs_proportion, "result/figS11_cs_contribution_to_aooc_vs_proportion_of_csrecords_loessfitted.png", dpi = 600, width = 12, height = 8)
+ggsave(plot = cs_aooc_vs_cs_proportion, "result/figS11_cs_contribution_to_aooc_vs_proportion_of_csrecords_loessfitted_v2.png", dpi = 600, width = 12, height = 8)
 
 
 aoocomp_cs_contr_and_cspro_spearman <-cor.test(aoo_eoo_subset$cs_proportion, 
@@ -265,7 +265,7 @@ cs_aooest_cortest <-cor.test(aoo_eoo_subset$cs_proportion,
 cs_eooest <- ggplot(data = aoo_eoo_subset, aes(x = cs_proportion, y =mean_cs.contribution/100))+ 
   geom_point()+
   geom_smooth()+
-  labs(x = "Proportion of citizen science records", y = "Proprotion of citizen science contribution to EOO estimate")+
+  labs(x = "Proportion of citizen science records", y = "Proportion of citizen science contribution to EOO estimate")+
   theme_classic()+
   theme(axis.title = element_text(size = 17),
         axis.text = element_text(size = 15),
