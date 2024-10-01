@@ -3,13 +3,13 @@
 ###
 ### Script for estimating area of occupancy (AOO) and completeness of AOO
 ### Part of the methods for the manuscript:
-### How well do we understand species’ geographic range size?: 
-### A case study of Australia’s frogs
-###
-### Jariya Chanachai (jariya.chanachai@hdr.mq.edu.au)
+### How well do we understand geographic range size?: 
+### A case study of Australia’s frogs and citizen science
+### Note: This script estimates AOO and completeness AOO for all data
+### 
 ################################################################################
 
-####  Load required packages and data objects
+### Load required packages and data objects
 library(raster)
 library(tidyverse)
 library(sf)
@@ -39,6 +39,10 @@ records_grouped <- records %>% group_by(species) %>% summarise(records = n())
 ################################################################################
 ### 1. Calculating range area:area of occupancy (AOO)
 ### using different cell sizes
+### The code in this section was adopted from:
+### Marsh, C.J., Syfert, M.M., Aletrari, E. et al (2023). 
+### The effect of sampling effort and methodology on range size estimates of poorly-recorded species for IUCN Red List assessments. 
+### Biodiversity and Conservation 32, 1105–1123. https://doi.org/10.1007/s10531-023-02543-9
 
 unique_species <- unique(records$species) 
 
@@ -57,7 +61,7 @@ aoo <- data.frame(species = unique_species,
 
 pb_aoo <- txtProgressBar(max = length(unique_species), style = 3)
 for(sp in 1:length(unique_species)) {
-  ### Subset points for selected species and remove duplicates
+  # Subset points for selected species and remove duplicates
   sp_coords <- records[records$species == as.character(unique_species[sp]), c("decimalLongitude", "decimalLatitude")]
   sp_coords <- sp_coords[!duplicated(sp_coords), ]
   
@@ -66,16 +70,16 @@ for(sp in 1:length(unique_species)) {
     sp_coords <- spTransform(sp_coords, CRS("+proj=cea +datum=WGS84 +units=km"))
     
     
-    ### Loop through generating grids at the different cell widths (km)
+    # Loop through generating grids at the different cell widths (km)
     cellWidths <- c(1, 2, 4, 8, 16, 32, 64, 128)
     
     for(cellWidth in cellWidths) {
-      ### if only a single point then AOO is area of single cell
+      # If only a single point then AOO is area of single cell
       if(length(sp_coords) == 1) {
         aoo[sp, paste0("aoo", cellWidth)] <- cellWidth ^ 2
       }
       
-      ### if more than one point then rasterise and sum area of occupied cells
+      # If more than one point then rasterise and sum area of occupied cells
       if(length(sp_coords)) {
         r <- raster(xmn =   floor(extent(sp_coords)[1] / cellWidth) * cellWidth,
                     xmx = ceiling(extent(sp_coords)[2] / cellWidth) * cellWidth,
@@ -99,6 +103,7 @@ aoo_with_records <- left_join(aoo, records_grouped, by = c("species"))
 ### Save results as CSV
 write.csv(aoo_with_records, "result/aoo_gridoverlay_various_cellsizes.csv", quote = FALSE, row.names = FALSE)
 
+################################################################################
 ### Obtain IUCN Redlist status for each frog species
 redlist <-iucn_redlist[,c("scientificName","redlistCategory", "redlistCriteria", "yearPublished")]
 
@@ -130,31 +135,32 @@ save(aoo_with_records_and_redlist, file = "result/aoo_various_cellsizes_with_rec
 write.csv(aoo_with_records_and_redlist, "result/aoo_various_cellsize_with_records_and_redlist.csv", quote = TRUE, row.names = FALSE)
 
 ################################################################################
-### Futher analysis
+### Further analysis
 
-aoo_with_records_and_redlist$threats_by_aoo <- ifelse(aoo_with_records_and_redlist$aoo2 < 10, "Critically Endangered",
-                                               ifelse(aoo_with_records_and_redlist$aoo2 >= 10 & 
-                                                        aoo_with_records_and_redlist$aoo2 < 500, "Endangered",
-                                               ifelse(aoo_with_records_and_redlist$aoo2 >= 500 & 
-                                                        aoo_with_records_and_redlist$aoo2 < 2000, "Vulnerable",
-                                               "Not threatened")))
+aoo_with_records_and_redlist$threats_by_aoo <- 
+  ifelse(aoo_with_records_and_redlist$aoo2 < 10, "Critically Endangered",
+  ifelse(aoo_with_records_and_redlist$aoo2 >= 10 & 
+  aoo_with_records_and_redlist$aoo2 < 500, "Endangered",
+  ifelse(aoo_with_records_and_redlist$aoo2 >= 500 & 
+  aoo_with_records_and_redlist$aoo2 < 2000, "Vulnerable",
+                                          "Not threatened")))
 
 save(aoo_with_records_and_redlist, file = "result/aoo_estimate_with_inferred_redlist_category.Rda")
 
-## Sumnmarise observed threat status based on AOO calculation at 2 x 2 km cell size
+### Sumnmarise observed threat status based on AOO calculation at 2 x 2 km cell size
 observed_threatstatus_subset_atleast100records <- aoo_with_records_and_redlist %>% 
   filter(records >= 100) %>%
   group_by(threats_by_aoo) %>% 
   summarise(total.spp = n())
 
-## A tibble: 3 × 2
+# A tibble: 3 × 2
 # threats_by_aoo total.spp
 #<chr>                 <int>
 #1 Endangered            36
 #2 Not threatened        52
 #3 Vulnerable            50
 
-## Actual IUCN threat status
+# Actual IUCN threat status
 actual_threatstatus_subset_atleast100records <- aoo_with_records_and_redlist %>% 
   filter(records >= 100) %>%
   group_by(redlistCategory) %>% 
@@ -198,7 +204,7 @@ cell_sizes <- c(1, 2, 4, 8, 16, 32, 64, 128)
 
 
 ### WARNING - This loop takes time to run
-## Loop through each cell size
+## Because it loops through each cell size
 pb_aoo_comp <- txtProgressBar(max = length(cell_sizes), style = 3)
 
 for (i in 1:length(cell_sizes)) {
@@ -304,7 +310,6 @@ ggsave(plot = chao_aoo_boxplot, "result/chao_aoo_boxplot_allresults.png", dpi = 
 
 ### Plot number of records vs AOO completeness
 
-
 df <- na.omit(cbind(chao_results_df$completeness,chao_results_df$records))
 y <- df[,1]
 x <- log10(df[,2])
@@ -343,8 +348,7 @@ ggsave(plot = aoo_completeness_plots, "result/figS1_aoo_and_completeness_boxxplo
 
 ### Monotonic relationship between AOO completeness and no of records was observed for species with >= 100 records
 ### AOO completeness increases with cell size
-
-### Filter and plot records with at least 100 records and for 2 x 2 km cell size
+### Filter and plot species with at least 100 records for 2 x 2 km cell size
 
 chao_results_df_withredlist <- chao_results_df
 
@@ -379,7 +383,6 @@ save(chao_results_df_withredlist, file = "result/aoo_estimates_completeness_allc
 
 filtered_chao_results_2km <- chao_results_df_withredlist %>% filter(Cellsize == 2)
 save(filtered_chao_results_2km, file= "result/filtered_chao_results_2km_alldatatype_final.Rda")
-
 
 ### Boxplot aoo and threatstatus
 
@@ -457,7 +460,5 @@ hist_combined <- plot_grid(plothist, plothist2, nrow = 2, ncol = 1,labels=c("(a)
 
 ggsave(plot = hist_combined, "result/figS7_aoo_completeness_histograms.png", width = 12, height = 15, dpi = 1200)
 
-
-################################################################################
-############ End of script for AOO estimates and completeness ##################
+###### End of script for AOO estimates and completeness with all data ##########
 ################################################################################
