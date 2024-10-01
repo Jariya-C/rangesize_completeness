@@ -3,10 +3,10 @@
 ###
 ### Script for assessing data trends and biases
 ### Part of the methods for the manuscript:
-### How well do we understand species’ geographic range size?: 
-### A case study of Australia’s frogs
+### How well do we understand geographic range size?: 
+### A case study of Australia’s frogs and citizen science
 ###
-### Jariya Chanachai (jariya.chanachai@hdr.mq.edu.au)
+### 
 ################################################################################
 ###
 ###
@@ -77,20 +77,20 @@ plot_distribution <- ggplot() +
   geom_text(data = state_centroids, 
             aes(x = X, y = Y, label = state_name), 
             size = 4, color = "black", fontface = "bold") +  # Add state names with geom_text
-  annotation_scale()+
+  #annotation_scale()+
   coord_sf(expand = TRUE,
            xlim =  c(110, 155), 
            ylim = c(-45, -10)) +
-  guides(color = guide_legend(override.aes = list(size = 5))) +
+  #guides(color = guide_legend(override.aes = list(size = 5))) +
   theme_classic()+
-  theme(legend.position = c(1,0.8),
-        legend.title = element_blank(),
-        legend.text = element_text(colour="black", size =15),
-        legend.background = element_blank(),
-        legend.key.size = unit(0.6,"cm")
-  )
+  theme(legend.position = "none",
+        panel.background = element_blank(),
+        axis.text = element_blank(),  # Remove latitude and longitude text
+        axis.ticks = element_blank(),  # Remove latitude and longitude ticks
+        axis.line = element_blank(),
+        axis.title = element_blank())
 
-ggsave(plot = plot_distribution, "result/fig4_distribution_map_withstatenames.png", dpi = 1200, width = 10, height = 6)
+ggsave(plot = plot_distribution, "result/fig3_distribution_map_withstatenames_noaxis_label.png", dpi = 1200, width = 10, height = 6)
 
 ###
 ### Spatial join occurrences with bioregion and calculate record density
@@ -143,7 +143,7 @@ plot_sampling_effort <- ggplot(ibra_density_sf, fill= NA, size =0.5) +
         legend.key.height = unit(2, 'mm'),
         legend.key.width = unit(20, 'mm'))
 
-ggsave(plot = plot_sampling_effort, "result/figS3_samplingeffort_map.png", width = 10, height = 6, dpi = 1200)
+ggsave(plot = plot_sampling_effort, "result/figS4_samplingeffort_map.png", width = 10, height = 6, dpi = 1200)
 
 ################################################################################
 ### Test for spatial autocorrelation with Nearest Neighbour
@@ -231,17 +231,19 @@ save(combined_data_nni_df, file = "results/combined_data_nni_df_final_20240702.R
 
 combined_data_nni_df_with_records <- left_join(records_by_species, combined_data_nni_df, by = "species")
 
-save(combined_data_nni_df_with_records, file = "Results/combined_data_nni_df_with_records_final_20240702.Rda")
+save(combined_data_nni_df_with_records, file = "results/combined_data_nni_df_with_records_final_20240702.Rda")
 ###
 ### Create boxplot and
 ### Test for significant difference between citizen and non-citizen science data
 
-
-boxplot_nni <- ggplot(data = combined_data_nni_df_with_records, 
+boxplot_nni <- ggplot(data = subset(combined_data_nni_df_with_records, datatype != "alldatatype"), 
                       aes(x =  reorder(datatype,NNI), 
                           y = NNI, fill = datatype)) +
               geom_boxplot() +
               scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+             # Rename the datatype
+             scale_x_discrete(labels = c("citizenscience" = "Citizen Science data", 
+                              "non_citizenscience" = " Non-citizen science data")) +
               scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2)) +
               xlab("") + ylab("Nearest Neighbour Index (NNI)") +
               theme(panel.background = element_blank(),
@@ -251,7 +253,7 @@ boxplot_nni <- ggplot(data = combined_data_nni_df_with_records,
                     axis.text = element_text(size = 12),
                     axis.title = element_text(size =12))
 
-ggsave(plot=boxplot_nni, "result/figS2_nni_boxplot.png", dpi = 1200,  width = 12, height = 8)
+ggsave(plot=boxplot_nni, "result/figS1_nni_boxplot.png", dpi = 1200,  width = 12, height = 8)
 
 
 ### Plot histogram of frequency of NNI to visualise the distribution.
@@ -264,7 +266,7 @@ histogram_plot_cs <-ggplot(subset(combined_data_nni_df_with_records, datatype ==
   theme(axis.text = element_text(size=12, colour = "black")) +
   (annotate("text", label= "Citizen science data", x = 1, y= 60) )
 
-ggsave(plot = histogram_plot_cs, "result/figS2_nni_histogram_csdata.png", width = 8, height = 5.5, dpi = 600)
+ggsave(plot = histogram_plot_cs, "result/figS1_nni_histogram_csdata.png", width = 8, height = 5.5, dpi = 600)
 
 
 histogram_plot_noncs <-ggplot(subset(combined_data_nni_df_with_records, datatype == "non_citizenscience"), 
@@ -275,19 +277,15 @@ histogram_plot_noncs <-ggplot(subset(combined_data_nni_df_with_records, datatype
   theme(axis.text = element_text(size=12, colour = "black")) +
   (annotate("text", label= "Non citizen science data", x = 1, y= 60) )
 
-ggsave(plot = histogram_plot_noncs, "result/figS2_nni_histogram_noncsdata.png", width = 8, height = 5.5, dpi = 600)
+ggsave(plot = histogram_plot_noncs, "result/figS1_nni_histogram_noncsdata.png", width = 8, height = 5.5, dpi = 600)
 
 ### Combine boxplot and histrograms into one figure
 nni_hist <- plot_grid(histogram_plot_cs, histogram_plot_noncs, labels = c("(a)","(b)"), label_size = 12)
 nni_boxplot_and_hist <- plot_grid(nni_hist, boxplot_nni, labels = c("", "(c)"), label_size = 12, ncol = 1 )
 
-ggsave(plot = nni_boxplot_and_hist, "result/figS2_combined_nni_histogram_and_boxplot.png", width = 8, height = 8, dpi = 1200)
+ggsave(plot = nni_boxplot_and_hist, "result/figS1_combined_nni_histogram_and_boxplot.png", width = 8, height = 8, dpi = 1200)
 
 ### Statistical analysis of NNI
-
-library(rstatix)
-
-
 # Obtain summary statistics by group
 
 filtered_combined_nni <- combined_data_nni_df_with_records %>%
@@ -342,7 +340,7 @@ plothist_records <- ggplot(records_by_species, aes(x=log10(totalrecords))) +
                      labels=c("1","10","100","1000", "10000","100000")) +
   theme(axis.text = element_text(size=10, colour = "black"))
 
-ggsave(plot = plothist_records, "result/figS4_histogram_records_frequency.png", width = 5.5, height = 4, dpi = 1200)
+ggsave(plot = plothist_records, "result/figS5_histogram_records_frequency.png", width = 5.5, height = 4, dpi = 1200)
 
 
 ### Plot number of records per year and trend in record accumulative
@@ -366,15 +364,17 @@ colnames(cs_by_year) <- c("Year", "N")
 ### Plot number of records per year and trend in record accumulation
 
 plot_records_accum <-ggplot(data=dfhx)+
-  geom_col(aes(x = as.numeric(as.character(Year)), y= N/1e3),width = .8, fill = "dodgerblue4") +
-  geom_col(data = cs_by_year, aes(x = as.numeric(as.character(Year)), y= N/1e3),width = .8, fill = "darkred") +
+  geom_col(aes(x = as.numeric(as.character(Year)), y= N/1e3, fill = "Non-citizen science data"),width = 0.8) +
+  geom_col(data = cs_by_year, aes(x = as.numeric(as.character(Year)), y= N/1e3, fill = "Citizen science data"), width =0.8)+
   geom_line(aes(x = as.numeric(as.character(Year)), y= (cum.sum/1e3)/5), colour = "grey30", linewidth=1) +
   scale_y_continuous(name = 'Number of records (x thousand)',
                      expand = c(0,0),
                      sec.axis = sec_axis(~.*5,name="Number of cumulated records (x thousand)")) +
   scale_x_continuous(name = "Year", expand = c(0,0), 
                      breaks = seq(1950,2023,10),limits= c(1950,2023)) +
-  theme_classic(base_size = 14)+
+  scale_fill_manual(name = "Data type", 
+                    values = c("Non-citizen science data" = "#00BFBF", "Citizen science data" = "#FF6F61")) +
+  theme_classic(base_size = 18)+
   theme(axis.line = element_line(linewidth = 0.4),
         axis.line.y.left = element_line(colour = "dodgerblue4"),
         axis.text.y.left = element_text(colour = "dodgerblue4"),
@@ -383,9 +383,17 @@ plot_records_accum <-ggplot(data=dfhx)+
         axis.line.y.right = element_line(colour = "grey30"),
         axis.text.y.right = element_text(colour = "grey30"),
         axis.title.y.right = element_text(colour = "grey30"),
-        axis.ticks.y.right = element_line(colour = "grey30"))
+        axis.ticks.y.right = element_line(colour = "grey30"),
+        legend.position = c(0.77, 0.85),
+        legend.text = element_text(size = 14),
+        legend.title = element_text(size = 14))
 
-ggsave(plot=plot_records_accum, "result/fig5_temporaltrend_record_accumulation.png", dpi = 1200, width = 8, height = 5)
+ggsave(plot=plot_records_accum, "result/fig3_temporaltrend_record_accumulation_v3_withlegend.png", dpi = 1200, width = 8, height = 5)
+
+
+final_plot <- ggdraw() + 
+  draw_plot(plot_records_accum) + draw_plot(plot_distribution, x = 0.0, y = 0.2, width = 0.7, height = 0.7)
+ggsave(plot=final_plot, "result/fig3_spatial_temporaltrend_withlegend_v2.png", dpi = 1200, width = 10, height = 7)
 
 ################################################################################
 ### Assessing biases in occurrence records with occAssess package 
@@ -413,8 +421,9 @@ record_bias <- assessRecordNumber(dat = frogdata_subset,
 
 plot_record_bias <- record_bias$plot +  
   scale_x_continuous(name ="Period",breaks = brks,labels =lb) +
-  guides(color = guide_legend(override.aes = list(size = 3))) +
-  theme(legend.text = element_text(size = 16),
+  #guides(color = guide_legend(override.aes = list(size = 3))) +
+  theme(#legend.text = element_text(size = 16),
+    legend.position = "none",
         axis.title = element_text(size = 16),
         axis.text = element_text(size = 16))
 
@@ -433,10 +442,12 @@ species_bias <- assessSpeciesNumber(dat = frogdata_subset,
 
 plot_species_bias <- species_bias$plot +  
   scale_x_continuous(name ="Period",breaks = brks,labels =lb) +
-  guides(color = guide_legend(override.aes = list(size = 3))) +
-  theme(legend.text = element_text(size = 16),
-        axis.title = element_text(size = 16),
-        axis.text = element_text(size = 16))
+  #guides(color = guide_legend(override.aes = list(size = 3))) +
+  theme(#legend.text = element_text(size = 16),
+    legend.position = "none",
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 16))
+
 
 ### Assess taxonomic biases over time
 # Indicates whether rare species are over-represented in the data
@@ -455,10 +466,12 @@ rarity_bias <- assessRarityBias(dat = frogdata_subset,
 
 plot_rarity_bias <-rarity_bias$plot  +
   scale_x_continuous(name ="Period",breaks = brks,labels =lb) +
-  guides(color = guide_legend(override.aes = list(size = 3))) +
-  theme(legend.text = element_text(size = 16),
-        axis.title = element_text(size = 16),
-        axis.text = element_text(size = 16))
+  #guides(color = guide_legend(override.aes = list(size = 3))) +
+  theme(#legend.text = element_text(size = 16),
+    legend.position = "none",
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 16))
+
 
 ### Assess spatial bias over time with NNI 
 
@@ -483,21 +496,29 @@ spatial_bias <- assessSpatialBias(dat = frogdata_subset,
 
 plot_spatial_bias <- spatial_bias$plot + 
   scale_x_continuous(name ="Period",breaks = brks,labels =lb) +
-  guides(fill = guide_legend(override.aes = list(size = 3))) +
-  theme(legend.text = element_text(size = 14),
-        axis.title = element_text(size = 14),
-        axis.text = element_text(size = 14))
+  #guides(color = guide_legend(override.aes = list(size = 3))) +
+  theme(#legend.text = element_text(size = 16),
+    legend.position = "none",
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 16))
+
 
 # Combine plots into one figure
 plot_biases <- plot_grid(plot_record_bias,
                          plot_species_bias,
                          plot_rarity_bias,
                          plot_spatial_bias, nrow = 2, ncol = 2,
-                         labels=c("(a)", "(b)", "(c)", "(d)"), 
+                         labels=c("(b)", "(c)", "(d)", "(e)"), 
                          hjust = 0,
                          label_size = 14)
 
-ggsave(plot = plot_biases, "result/figS5_occAssess_datacover_over_time.png", width = 15, height = 8, dpi = 1200)
+ggsave(plot = plot_biases, "result/fig3_occAssess_datacover_over_time_new2.png", width = 12, height = 10, dpi = 1200)
+
+
+spatial_taxonomic_bias <- plot_grid(final_plot, plot_biases,
+                                   nrow = 2, ncol=1, labels= c("(a)","","","",""))
+
+ggsave(plot = spatial_taxonomic_bias, "result/figs3_spatial_temporal_bias_new2.png", width = 12, height = 16, dpi = 1200)
 
 ### Assess the extent to which the data are spatiao-temporally biased
 ## which is the extent to which the same area has been sampled over time
@@ -547,7 +568,6 @@ alldata_spatialcov <-  na.omit(alldata_spatialcov_bias$Australia) +
   scale_fill_viridis_d(name = "Number of periods sampled") +
   coord_sf(xlim = c(110, 155), ylim = c(-45, -10)) +
   labs(x = "Longitude", y = "Latitude") 
-
 
 
 ### Combine spatial-temporal bias plots into one figure
