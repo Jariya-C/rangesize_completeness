@@ -3,14 +3,13 @@
 ###
 ### Script for download data from ALA using galah package
 ### Part of the methods for the manuscript:
-### How well do we understand species’ geographic range size?: 
-### A case study of Australia’s frogs
+### How well do we understand geographic range size?: 
+### A case study of Australia’s frogs and citizen science projects
 ###
-### Jariya Chanachai (jariya.chanachai@hdr.mq.edu.au)
+### 
 ################################################################################
 ### Exact same dataset can be directly downloaded from ALA using the links provided
 ### See rows 146-152 
-###
 ################################################################################ 
 ### Install packages and load required libraries
 # Install galah package - the development version from GitHub:
@@ -22,7 +21,7 @@
 library(galah)
 library(tidyverse)
 
-galah_config(email = "jariya.chanachai@students.mq.edu.au", atlas="Australia", verbose=TRUE) 
+galah_config(email = "youremailaddress", atlas="Australia", verbose=TRUE) 
 # Change this to own email
 preserve = TRUE
 
