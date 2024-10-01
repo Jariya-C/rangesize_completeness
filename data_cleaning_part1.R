@@ -36,7 +36,7 @@ ala_occurrences_raw <- ala_all_rawdata #change data object name
 
 ####
 # IMPORTANT: f you do not have the desensitised FrogID data,
-# skip rows 41 - 80 since desensitised records of FrogID are included in ALA download 
+# skip rows 41 - 82 since desensitised records of FrogID are included in ALA download 
 ###
 frogid_occurrences_raw <- read_csv("data/FrogID4_final_dataset_SENSITIVE_INCLUDED_AUSTRALIA.csv")
 nrow(frogid_occurrences_raw)
@@ -76,11 +76,13 @@ occurrences_by_insitution <- ala_occurrences_raw %>%
 # (N = 394,140 records which is ~ 1/3 (32.2%) of raw records)
 
 ### Exclude records in ALA which were supplied by FrogID to remove duplicates
+### IMPORTANT: If you do not have data obtained directly from Australian Museum,
+### do not exclude the FrogID data from ALA since you do not have to remove duplicates
 ala_occurrences_raw <- subset(ala_occurrences_raw, dataResourceName != "FrogID")
 nrow(ala_occ_raw) 
 # 826,181 records retained
 
-
+################################################################################
 ### Plot distribution of frog species occurrences for visualisation ####
 ala_occurrences <- ala_occurrences_raw %>% 
   dplyr::select("species", "decimalLatitude", "decimalLongitude")%>%
@@ -97,9 +99,11 @@ frog_alloccurrences_raw <-bind_rows(ala_occurrences,
 
 ################################################################################
 ### Data cleaning processes for ALA dataset
+### Instead of filtering records at very test,
+### We carry out all tests before removing records to ensure 
 
 ### Select and keep relevant fields
-ala_rawdata <- ala_occ_raw %>%
+ala_rawdata <- ala_occurrences_raw %>%
   dplyr::select("scientificName","species","taxonRank","decimalLongitude",
                 "decimalLatitude", "dataResourceName", "basisOfRecord",
                 "eventDate","day","month","year","sensitive","country","cl1048", 
@@ -151,6 +155,7 @@ ala_preprocess$countryCode <- countrycode(ala_preprocess$countryCode,
                                          origin = "country.name",
                                          destination = "iso3c")
 
+### WARNING: The below function takes about 1 hour to run
 ala_preprocess <- {
   
   # Split dataframe into two subsets
