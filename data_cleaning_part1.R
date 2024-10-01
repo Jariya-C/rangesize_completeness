@@ -3,10 +3,10 @@
 ###
 ### Script for cleaning occurrence records
 ### Part of the methods for the manuscript:
-### How well do we understand species’ geographic range size?: 
-### A case study of Australia’s frogs
+### How well do we understand geographic range size?: 
+### A case study of Australia’s frogs and citizen science projects
 ###
-### Jariya Chanachai (jariya.chanachai@hdr.mq.edu.au)
+###
 ################################################################################
 ###
 ###
@@ -31,8 +31,13 @@ ala_occurrences_raw <- ala_all_rawdata #change data object name
 # Note that this study obtained FrogID data through licence agreement.
 # The dataset includes sensitive records and cannot be shared publicly.
 # FrogID dataset can be downloaded from https://www.frogid.net.au/explore
-# Sensitive records have been desensitised with reduced geolocation accuracy.
+# Sensitive records obtained directly from the website
+# have been desensitised with reduced geolocation accuracy.
 
+####
+# IMPORTANT: f you do not have the desensitised FrogID data,
+# skip rows 41 - 80 since desensitised records of FrogID are included in ALA download 
+###
 frogid_occurrences_raw <- read_csv("data/FrogID4_final_dataset_SENSITIVE_INCLUDED_AUSTRALIA.csv")
 nrow(frogid_occurrences_raw)
 #[1] 484665
@@ -71,13 +76,13 @@ occurrences_by_insitution <- ala_occurrences_raw %>%
 # (N = 394,140 records which is ~ 1/3 (32.2%) of raw records)
 
 ### Exclude records in ALA which were supplied by FrogID to remove duplicates
-ala_occ_raw <- subset(ala_occurrences_raw, dataResourceName != "FrogID")
+ala_occurrences_raw <- subset(ala_occurrences_raw, dataResourceName != "FrogID")
 nrow(ala_occ_raw) 
 # 826,181 records retained
 
 
-#### Plot distribution of frog species occurrences for raw data from ALA and FrogID ####
-ala_occurrences <- ala_occ_raw %>% 
+### Plot distribution of frog species occurrences for visualisation ####
+ala_occurrences <- ala_occurrences_raw %>% 
   dplyr::select("species", "decimalLatitude", "decimalLongitude")%>%
   mutate(datatype = "ALA")
 
@@ -111,7 +116,6 @@ ala_preprocess <- ala_rawdata %>%
     taxon_matchtype_test = ifelse((taxonRank == "species" | taxonRank == "subspecies") & matchType != "higherMatch", TRUE, FALSE), 
   # Old record test
     time_test = ifelse(year >= 1950 & !is.na(year), TRUE, FALSE))
-
 
 ### Flag duplicated records (i.e., additional records of the same taxon at the same location and collection date)
 
@@ -210,9 +214,9 @@ save(ala_initial_clean, file = "data/ala_initial_clean_20240618.Rda")
 
 ################################################################################
 ### Data cleaning processes for FrogID dataset
+### IMPORTANT: If using FrogID data aggregated through ALA, skip the rest of the code
 
 ### Data harmonisation and integration of fields for FrogID data
-
 frogid_occ_raw <- frogid_occurrences_raw 
 frogid_occ_raw$species <- frogid_occ_raw$scientificName
 frogid_occ_raw$taxonRank <- "species" 
@@ -263,7 +267,6 @@ frogid_preprocess <- frogid_preprocess %>%
     country_test = ifelse(country == "Australia" & !is.na(country), TRUE, FALSE), 
   # Flag records with just zeros in decimals
     dec.zeros_test =ifelse(!(grepl('^[^\\.]+$|\\.0*$', decimalLatitude)) & !(grepl('^[^\\.]+$|\\.[0*]$',decimalLongitude)), TRUE, FALSE)) 
-
 
 
 # Flag more  geographic coordinates issues 
