@@ -4,7 +4,7 @@
 ### Script for cleaning occurrence records
 ### Part of the methods for the manuscript:
 ### How well do we understand geographic range size?: 
-### A case study of Australia’s frogs and citizen science projects
+### A case study of Australia’s frogs and citizen science
 ###
 ###
 ################################################################################
@@ -21,8 +21,6 @@ library(CoordinateCleaner)
 library(countrycode)
 library(sf)
 
-### Load raw data
-
 # Load ALA data
 load("data/ala_frog_occurrences_raw_20231017.Rda") #ala_all_rawdata
 ala_occurrences_raw <- ala_all_rawdata #change data object name
@@ -34,11 +32,11 @@ ala_occurrences_raw <- ala_all_rawdata #change data object name
 # Sensitive records obtained directly from the website
 # have been desensitised with reduced geolocation accuracy.
 
-####
+###
 # IMPORTANT: f you do not have the desensitised FrogID data,
 # skip rows 41 - 82 since desensitised records of FrogID are included in ALA download 
 ###
-frogid_occurrences_raw <- read_csv("data/FrogID4_final_dataset_SENSITIVE_INCLUDED_AUSTRALIA.csv")
+frogid_occurrences_raw <- read_csv("data/FrogID4_AUSTRALIA.csv")
 nrow(frogid_occurrences_raw)
 #[1] 484665
 
@@ -191,7 +189,7 @@ summary(cleaned_coords)
 #.val tests for coordinate validity, .equ for equal lat/long, .zer for zero coordinates, .cen = country capitals
 
 
-## Flag records with coordinate uncertainty higher than 2 km
+### Flag records with coordinate uncertainty higher than 2 km
 ala_preprocess <- ala_preprocess %>% 
   # test for records with coordinate uncertainty above 2 km
   mutate(coord_pres_test = ifelse(coordinateUncertaintyInMeters <= 2000 & !is.na(coordinateUncertaintyInMeters), TRUE, FALSE))
@@ -214,17 +212,17 @@ ala_initial_clean <- ala_preprocess %>%
 ala_initial_clean$dataprovider <- "ALA"
 length(unique(ala_initial_clean$species)) #220 species remain
 
-### Save ALA clean data
+# Save ALA clean data
 save(ala_initial_clean, file = "data/ala_initial_clean_20240618.Rda")
 
 ################################################################################
 ### Data cleaning processes for FrogID dataset
-### IMPORTANT: If using FrogID data aggregated through ALA, uncomment and save
+### IMPORTANT: If using FrogID data aggregated through ALA, un-comment and save
 ### ALA data as the entire data
 ### allfrog_occ_intial_clean <- ala_initial_clean
 ### save(allfrog_occ_intial_clean , file = "data/allfrog_occ_intial_clean_20240618.Rda")
 ### And disregard the rest of the code for cleaning FrogID dataset
-
+###
 ### Data harmonisation and integration of fields for FrogID data
 frogid_occ_raw <- frogid_occurrences_raw 
 frogid_occ_raw$species <- frogid_occ_raw$scientificName
