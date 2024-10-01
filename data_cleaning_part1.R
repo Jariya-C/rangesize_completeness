@@ -219,7 +219,11 @@ save(ala_initial_clean, file = "data/ala_initial_clean_20240618.Rda")
 
 ################################################################################
 ### Data cleaning processes for FrogID dataset
-### IMPORTANT: If using FrogID data aggregated through ALA, skip the rest of the code
+### IMPORTANT: If using FrogID data aggregated through ALA, uncomment and save
+### ALA data as the entire data
+### allfrog_occ_intial_clean <- ala_initial_clean
+### save(allfrog_occ_intial_clean , file = "data/allfrog_occ_intial_clean_20240618.Rda")
+### And disregard the rest of the code for cleaning FrogID dataset
 
 ### Data harmonisation and integration of fields for FrogID data
 frogid_occ_raw <- frogid_occurrences_raw 
