@@ -90,7 +90,7 @@ plot_distribution <- ggplot() +
         axis.line = element_blank(),
         axis.title = element_blank())
 
-ggsave(plot = plot_distribution, "result/fig3_distribution_map_withstatenames_noaxis_label.png", dpi = 1200, width = 10, height = 6)
+ggsave(plot = plot_distribution, "result/distribution_map.png", dpi = 1200, width = 10, height = 6)
 
 ###
 ### Spatial join occurrences with bioregion and calculate record density
@@ -253,7 +253,7 @@ boxplot_nni <- ggplot(data = subset(combined_data_nni_df_with_records, datatype 
                     axis.text = element_text(size = 12),
                     axis.title = element_text(size =12))
 
-ggsave(plot=boxplot_nni, "result/figS1_nni_boxplot.png", dpi = 1200,  width = 12, height = 8)
+ggsave(plot=boxplot_nni, "result/nni_boxplot.png", dpi = 1200,  width = 12, height = 8)
 
 
 ### Plot histogram of frequency of NNI to visualise the distribution.
@@ -266,7 +266,7 @@ histogram_plot_cs <-ggplot(subset(combined_data_nni_df_with_records, datatype ==
   theme(axis.text = element_text(size=12, colour = "black")) +
   (annotate("text", label= "Citizen science data", x = 1, y= 60) )
 
-ggsave(plot = histogram_plot_cs, "result/figS1_nni_histogram_csdata.png", width = 8, height = 5.5, dpi = 600)
+ggsave(plot = histogram_plot_cs, "result/nni_histogram_csdata.png", width = 8, height = 5.5, dpi = 600)
 
 
 histogram_plot_noncs <-ggplot(subset(combined_data_nni_df_with_records, datatype == "non_citizenscience"), 
@@ -277,7 +277,7 @@ histogram_plot_noncs <-ggplot(subset(combined_data_nni_df_with_records, datatype
   theme(axis.text = element_text(size=12, colour = "black")) +
   (annotate("text", label= "Non citizen science data", x = 1, y= 60) )
 
-ggsave(plot = histogram_plot_noncs, "result/figS1_nni_histogram_noncsdata.png", width = 8, height = 5.5, dpi = 600)
+ggsave(plot = histogram_plot_noncs, "result/nni_histogram_noncsdata.png", width = 8, height = 5.5, dpi = 600)
 
 ### Combine boxplot and histrograms into one figure
 nni_hist <- plot_grid(histogram_plot_cs, histogram_plot_noncs, labels = c("(a)","(b)"), label_size = 12)
@@ -318,7 +318,7 @@ stat.test
 #<chr>      <chr>          <chr>              <int> <int>     <dbl>        <dbl> <chr>   
 #  1 NNI   citizenscience non_citizenscience   187   178     11145 0.0000000487 ****    
 
-### There is a significant difference in the NNI distribution between groups ###
+# There is a significant difference in the NNI distribution between groups #
 
 cs_vs_noncs_nni %>% rstatix::wilcox_effsize(NNI ~ datatype)
 # A tibble: 1 × 7
@@ -326,7 +326,8 @@ cs_vs_noncs_nni %>% rstatix::wilcox_effsize(NNI ~ datatype)
 #* <chr>  <chr>           <chr>                <dbl>   <int> <int> <ord>    
 #  1 NNI   citizenscience non_citizenscience   0.286    187   178 small    
 
-### With a small effect size ###
+# With a small effect size 
+
 ################################################################################
 ### Taxonomic and temporal trends and biases
 
@@ -388,12 +389,12 @@ plot_records_accum <-ggplot(data=dfhx)+
         legend.text = element_text(size = 14),
         legend.title = element_text(size = 14))
 
-ggsave(plot=plot_records_accum, "result/fig3_temporaltrend_record_accumulation_v3_withlegend.png", dpi = 1200, width = 8, height = 5)
+ggsave(plot=plot_records_accum, "result/temporaltrend_record_accumulation_withlegend.png", dpi = 1200, width = 8, height = 5)
 
 
 final_plot <- ggdraw() + 
   draw_plot(plot_records_accum) + draw_plot(plot_distribution, x = 0.0, y = 0.2, width = 0.7, height = 0.7)
-ggsave(plot=final_plot, "result/fig3_spatial_temporaltrend_withlegend_v2.png", dpi = 1200, width = 10, height = 7)
+ggsave(plot=final_plot, "result/spatial_temporaltrend_withlegend.png", dpi = 1200, width = 10, height = 7)
 
 ################################################################################
 ### Assessing biases in occurrence records with occAssess package 
@@ -512,13 +513,13 @@ plot_biases <- plot_grid(plot_record_bias,
                          hjust = 0,
                          label_size = 14)
 
-ggsave(plot = plot_biases, "result/fig3_occAssess_datacover_over_time_new2.png", width = 12, height = 10, dpi = 1200)
+ggsave(plot = plot_biases, "result/occAssess_datacoverage_over_time.png", width = 12, height = 10, dpi = 1200)
 
 
 spatial_taxonomic_bias <- plot_grid(final_plot, plot_biases,
                                    nrow = 2, ncol=1, labels= c("(a)","","","",""))
 
-ggsave(plot = spatial_taxonomic_bias, "result/figs3_spatial_temporal_bias_new2.png", width = 12, height = 16, dpi = 1200)
+ggsave(plot = spatial_taxonomic_bias, "result/figs3_spatial_temporal_bias.png", width = 12, height = 16, dpi = 1200)
 
 ### Assess the extent to which the data are spatiao-temporally biased
 ## which is the extent to which the same area has been sampled over time
