@@ -29,7 +29,7 @@ preserve = TRUE
 ################################################################################
 ### Load species list and download occurrence records
 # Load species list obtained from Australian Faunal Directory (AFD)
-spp_list <- read_csv("data/Australian-frogs-species-list-from-AFD-SpeciesLevel.csv")
+spp_list <- read_csv("data/Australian-frogs-species-list-from-AFD-SpeciesLevel-20230614.csv")
 frog_list <- as.character(unique(spp_list$SPECIES_NAME)) #248 unique species names
 
 # Search species name in ALA
