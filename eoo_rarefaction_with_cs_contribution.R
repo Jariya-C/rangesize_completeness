@@ -182,18 +182,18 @@ for (k in 1:length(species)) {
   # EOO Completeness
   # Percentage of EOO calculated with 80% and 100% of records (%EOO80 - %EOO100)
   # Percentage of EOO calculated with 100% of records will be 100, thus it's %EOO80 - 100
-  eoo_prop_at_80percent <- (average_mcp[16,"mcp_mean"]/average_mcp[20,"mcp_mean"])*100 - 100 
+  eoo_prop__80and100percent <- (average_mcp[16,"mcp_mean"]/average_mcp[20,"mcp_mean"])*100 - 100 
+  
   # Completeness is calculated as 1 - the slope of the last 20% of EOO rarefaction:
   # 1 - (%EOO80 - %EOO100)/(N80-N100) where  N80 and N100 is the 80 and 100 percent of records, respectively.
-  mean_mcp_completeness  <- 1 - (eoo_prop_at_80percent/-20) 
+  mean_mcp_completeness  <- 1 - (eoo_prop__80and100percent/-20) 
   mcp_completeness_sigfig <- signif(mean_mcp_completeness, digits = 3)
   species_records <- records_by_species[records_by_species$species == species[k],]
-  #allrds_position <-  average_mcp$mcp_mean[1] - average_mcp$mcp_sd[1]
-  #cs_rds_position <- mcp_tab[18,19]
-  #noncs_rds_position <- mcp_tab[16,19]
-  #mcp_tab$slope <- ((mcp_tab[,20] - mcp_tab[,16])/mcp_tab[,20]*100)/(100-80)
-  #mean_slope <- mean(mcp_tab$slope)
-  #mean_slope_3sigfig <- signif(mean_slope, digits = 3)
+  
+  #Another way of calculating slope which is (%EOO100 - %EOO80)/(100-80)
+  mcp_tab$slope <- ((mcp_tab[,20] - mcp_tab[,16])/mcp_tab[,20]*100)/(100-80)
+  mean_slope <- mean(mcp_tab$slope)
+  mean_slope_3sigfig <- signif(mean_slope, digits = 3)
   
   # Citizen science contribution
   cs_mcp_tab_na_rm <- cs_mcp_tab
@@ -312,5 +312,5 @@ ggsave(plot = hist_cs_eooest, "result/figS12_cs_contribution_to_eoo_estimate_his
 
 
 ######## End of script for estimating EOO estimates and completeness ###########
-########### And for calcualting CS contribution to EOO estimates ###############
+########### And for calculating CS contribution to EOO estimates ###############
 ################################################################################
