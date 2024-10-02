@@ -1,13 +1,18 @@
 ################################################################################
-### AOO and EOO Correlation
+### AOO and EOO Correlation + additional analysis
 ###
-### Script for analysing the relationship between
+### Script for analysing the relationship between the
 ### Area of Occupancy (AOO) and Extent of Occurrence (EOO)
+### And for plotting:
+### (1) EOO estimate and completeness historgram
+### (2) AOO and EOO completeness boxplots comparing threatened and not threatened groups
+### (3) Proportion of CS contribution vs proportion of CS record to AOO and EOO estimates
+### (4) Proportion of CS contribution vs proportion of CS record to AOO completeness 
 ### Part of the methods for the manuscript:
-### How well do we understand species’ geographic range size?: 
-### A case study of Australia’s frogs
+### How well do we understand geographic range size?: 
+### A case study of Australia’s frogs and citizen science
 ###
-### Jariya Chanachai (jariya.chanachai@hdr.mq.edu.au)
+###
 ################################################################################
 
 ### Load required packages and data objects
@@ -15,6 +20,7 @@ library(tidyverse)
 library(rstatix)
 library(viridis)
 library(cowplot)
+library(ggrepel)
 
 load("result/aoo_estimates_and_completeness_with_cs_contribution_2km_allspp.Rda")
 load("result/eoo_completeness_and_cs_contribution_table_final.Rda")
@@ -41,7 +47,7 @@ aoo_eoo_joined_df <- aoo_eoo_joined %>% select("species", "totalrecords","cs_rec
                                                "cs_to_AOOestimate", "cs_to_AOOcompleteness", "Cellsize",
                                                "mean_cs.contribution", "redlistCategory", "threatstatus")
   
-  
+### This result is used to generate Table S3  
 save(aoo_eoo_joined_df, file = "result/aoo_eoo_estimates_and_completeness_df_with_cs_contribution_allspp.Rda")
 
 aoo_eoo_subset <- aoo_eoo_joined_df %>% 
@@ -53,7 +59,6 @@ aoo_eoo_subset %>%
 #variable        n   min      max  median     q1      q3     iqr     mad    mean       sd      se      ci
 #    <fct>    <dbl> <dbl>    <dbl>   <dbl>  <dbl>   <dbl>   <dbl>   <dbl>   <dbl>    <dbl>   <dbl>   <dbl>
 #  1 eoo_area   138  136. 7931538. 267466. 45707. 984850. 939143. 370035. 826733. 1287485. 109598. 216723.
-
 
 aoo_eoo_subset %>%  
   get_summary_stats(mean_mcp_completeness)
@@ -72,8 +77,8 @@ aoo_eoo_subset %>%
 #1 Not threatened mean_mcp_completeness   118 0.205 0.996  0.869 0.789 0.938 0.149 0.111 0.838 0.141 0.013 0.026
 #2 Threatened     mean_mcp_completeness    20 0.104 0.931  0.684 0.543 0.859 0.317 0.257 0.66  0.218 0.049 0.102
 
-### Test for significant difference in distribtuion of eoo completeness 
-#   between threatened and non-threatened groups
+### Test for significant difference in distribution of eoo completeness 
+### Between threatened and non-threatened groups
 stat.test <- aoo_eoo_subset %>% 
   wilcox_test(mean_mcp_completeness ~ threatstatus) %>%
   add_significance()
@@ -85,14 +90,14 @@ stat.test
 #   <chr>                 <chr>          <chr>      <int> <int>     <dbl>    <dbl> <chr>   
 #  1 mean_mcp_completeness Not threatened Threatened   118    20      1805 0.000159 ***     
 
+### Result shows a significant difference in mean EOO completeness between groups
 aoo_eoo_subset %>% rstatix::wilcox_effsize(mean_mcp_completeness ~ threatstatus)
 # A tibble: 1 × 7
 #    .y.                   group1         group2     effsize    n1    n2 magnitude
 #   * <chr>                 <chr>          <chr>        <dbl> <int> <int> <ord>    
 #  1 mean_mcp_completeness Not threatened Threatened   0.322   118    20 moderate 
 
-
-## Test for monotonic relationship between AOO and EOO completeness
+### Test for monotonic relationship between AOO and EOO completeness
 aoo_eoo_cor <-cor.test(aoo_eoo_subset$completeness, aoo_eoo_subset$mean_mcp_completeness, method = c("spearman"))
 aoo_eoo_cor
 ##Spearman's rank correlation rho
@@ -103,18 +108,23 @@ aoo_eoo_cor
 #sample estimates:
 #  rho 
 #-0.04706283 
-
+### Slightly negative relationship but not statistically different
 
 cor_plot <- ggplot(data = aoo_eoo_subset, aes(x = mean_mcp_completeness, y =completeness))+ 
-  geom_point(size = 1.5)+
+  geom_point(aes(colour = threatstatus), size = 2)+
   geom_smooth()+
   labs(x = "EOO completeness", y = "AOO completeness")+
+  scale_colour_manual(values = c("Threatened" = "red", "Not threatened" = "black")) + 
+  guides(color = guide_legend(override.aes = list(size = 5)))+
   theme_classic()+
-  theme(axis.title = element_text(size = 19),
-      axis.text = element_text(size = 17),
+  theme(axis.title = element_text(size = 22),
+      axis.text = element_text(size = 22),
+      legend.title = element_blank(),
+      legend.text = element_text(size = 17),
+      legend.position = c(0.3, 0.9),
       panel.background = element_blank())
 
-ggsave(plot = cor_plot, "result/fig6_aoo_eoo_correlation_plot_v2.png", dpi = 600, width = 12, height = 8)
+ggsave(plot = cor_plot, "result/fig5_aoo_eoo_correlation_plot.png", dpi = 600, width = 12, height = 8)
 
 ################################################################################
 ##### Plotting
@@ -158,43 +168,67 @@ ggsave(plot = hist_combined, "result/figS8_eoo_completeness_histograms.png", wid
 ### Boxplot of AOO and EOO completeness
 ### Compared between threatened and non-theatened groups
 
-aoo_threat_boxplot <-ggplot(aoo_eoo_subset, 
-                            aes(x = reorder(threatstatus,-completeness), 
-                                y = completeness, fill = threatstatus)) +
-  geom_boxplot()+
-  scale_fill_viridis(discrete = TRUE, alpha=0.6) +
-  stat_summary(fun.y=mean, geom="point", shape = 17, size = 3, colour = "black")+
-  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2)) +
-  ### p-value obtained from wilcoxon test (analysed in aoo_estimate_completeness.R)
-  annotate("text", x = 1.5, y = 0.4, label ="p-value = 0.0197", size = 5) +
-  xlab("") + ylab("AOO completeness") +
-  theme(panel.background = element_blank(),
-        legend.position = "none",
-        axis.line = element_line(),
-        axis.ticks.y = element_line(),
-        axis.text = element_text(size = 18, colour = "black"),
-        axis.title = element_text(size =20, colour = "black"))
+findoutlier <- function(x) {
+  return(x < quantile(x, .25) - 1.5*IQR(x) | x > quantile(x, .75) + 1.5*IQR(x))
+}
 
-eoo_threat_boxplot <-ggplot(aoo_eoo_subset, 
-                     aes(x = reorder(threatstatus,mean_mcp_completeness), 
-                   y = mean_mcp_completeness, fill = threatstatus)) +
-  geom_boxplot()+
-  scale_fill_viridis(discrete = TRUE, alpha=0.6) +
-  stat_summary(fun.y=mean, geom="point", shape = 17, size = 3, colour = "black")+
-  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2)) +
-  annotate("text", x = 1.5, y = 0.4, label ="p-value = 0.00016", size = 5) +
-  xlab("") + ylab("EOO completeness") +
-  theme(panel.background = element_blank(),
-        legend.position = "none",
-        axis.line = element_line(),
-        axis.ticks.y = element_line(),
-        axis.text = element_text(size = 18, colour = "black"),
-        axis.title = element_text(size =20, colour = "black"))
+data <- subset(aoo_eoo_joined_df, totalrecords >= 100)
 
-aoo_eoo_threatstatus_bp <- plot_grid(aoo_threat_boxplot, eoo_threat_boxplot, labels = c("(a)","(b)"), nrow = 2, ncol = 1,label_size = 14)
+df <- subset(data, is.na(mean_mcp_completeness)==F & is.na(completeness)==F)
+df <- df %>%
+  group_by(threatstatus) %>%
+  mutate(outlier_AOO = ifelse(findoutlier(completeness), species, NA),
+         outlier_EOO = ifelse(findoutlier(mean_mcp_completeness), species, NA))
 
-ggsave(plot = aoo_eoo_threatstatus_bp, "result/figS9_aoo_eoo_threatstatus_boxplots.png", width = 10, height = 12, dpi = 1200)
+(aoobox <- ggplot(df, aes(x = threatstatus, y = completeness, fill = threatstatus)) +
+    geom_boxplot(linewidth = 0.5) +
+    geom_text_repel(aes(label = outlier_AOO), size = 5,
+                    na.rm = TRUE,
+                    hjust = -.5, vjust = -.5,
+                    segment.size = 0.3, fontface = "italic" # Specify the line width
+                    # segment.color = "grey50"  # Customize the line color
+    ) +
+    scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2)) +
+    scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+    #scale_colour_manual(values = c("Threatened" = "#F0E442", "Not threatened" = "#009E73")) +
+    xlab("") + 
+    labs(title = "Area of occupancy")+
+    ylab("Completeness index") +
+    theme_minimal(base_size = 16) +
+    theme(legend.position = "none", 
+          panel.grid.minor = element_blank(),
+          axis.text = element_text(size = 15, colour = "black"),
+          axis.line.y = element_line(colour = "grey"),
+          plot.title = element_text(hjust = 0.5, size = 16, face = "bold")))
 
+(eoobox <- ggplot(df, aes(x = threatstatus, y = mean_mcp_completeness, fill = threatstatus)) +
+    geom_boxplot(linewidth = 0.5) +
+    geom_text_repel(aes(label = outlier_EOO),
+                    size = 5,
+                    na.rm = TRUE,
+                    hjust = -1, vjust = 3.5,
+                    segment.size = 0.3, fontface= "italic" # Specify the line width
+                    # segment.color = "grey50"  # Customize the line color
+    ) +
+    scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2)) +
+    scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+    #scale_colour_manual(values = c("Threatened" = "#F0E442", "Not threatened" = "#009E73")) +
+    xlab("") + 
+    labs(title = "Extent of occurrence")+
+    ylab("Completeness index") +
+    theme_minimal(base_size = 16) +
+    theme(legend.position = "none", panel.grid.minor = element_blank(),
+          axis.text = element_text(size = 15, colour = "black"),
+          axis.line.y = element_blank(),
+          axis.text.y = element_blank(),
+          axis.title.y = element_blank(),
+          plot.title = element_text(hjust = 0.5, size = 16, face = "bold")))
+
+
+
+plots_combined <- plot_grid(aoobox, eoobox, ncol = 2)
+
+ggsave(plots_combined, file="result/fig4_aoo_eoo_completeness_boxplot_withthreatstatus.png", width = 12, height = 10, dpi = 1200)
 
 ################################################################################
 ############# Proportion of cs contribution to AOO completeness ################
@@ -213,7 +247,7 @@ cs_aooc_vs_cs_proportion <- ggplot(data = aoo_eoo_subset, aes(x = cs_proportion,
         axis.text = element_text(size = 15),
         panel.background = element_blank())
 
-ggsave(plot = cs_aooc_vs_cs_proportion, "result/figS11_cs_contribution_to_aooc_vs_proportion_of_csrecords_loessfitted_v2.png", dpi = 600, width = 12, height = 8)
+ggsave(plot = cs_aooc_vs_cs_proportion, "result/figS10_cs_contribution_to_aooc_vs_proportion_of_csrecords_loessfitted.png", dpi = 600, width = 12, height = 8)
 
 
 aoocomp_cs_contr_and_cspro_spearman <-cor.test(aoo_eoo_subset$cs_proportion, 
@@ -229,11 +263,8 @@ aoocomp_cs_contr_and_cspro_spearman
 #  rho 
 #0.8710383 
 
-
-## Proportion of CS contribution to AOO and EOO estimates
-load("C:/Users/45790779/OneDrive - Macquarie University/PhD Project/2.-Experiment/SpeciesRangeSize/Results/records_aoo_eoo_20240823.Rda")
-
-combined_df$cs_proportion <- combined_df$citizen_science_records/combined_df$total_records 
+### Proportion of CS contribution to AOO and EOO estimates
+load("result/aoo_eoo_estimates_and_completeness_df_with_cs_contribution_allspp.Rda")
 
 cs_aooest <- ggplot(data = aoo_eoo_subset, aes(x =cs_proportion, y =cs_to_AOOestimate))+ 
   geom_point() + 
@@ -245,7 +276,7 @@ cs_aooest <- ggplot(data = aoo_eoo_subset, aes(x =cs_proportion, y =cs_to_AOOest
         panel.background = element_blank())
 
 
-ggsave(plot = cs_aooest, "result/figS10a_cscontribution_aooest_loessfitted.png", dpi = 600, width = 12, height = 8)
+ggsave(plot = cs_aooest, "result/cscontribution_aooest_loessfitted.png", dpi = 600, width = 12, height = 8)
 
 
 cs_aooest_cortest <-cor.test(aoo_eoo_subset$cs_proportion, 
@@ -261,7 +292,6 @@ cs_aooest_cortest <-cor.test(aoo_eoo_subset$cs_proportion,
 #  rho 
 #0.8398357 
 
-
 cs_eooest <- ggplot(data = aoo_eoo_subset, aes(x = cs_proportion, y =mean_cs.contribution/100))+ 
   geom_point()+
   geom_smooth()+
@@ -273,7 +303,7 @@ cs_eooest <- ggplot(data = aoo_eoo_subset, aes(x = cs_proportion, y =mean_cs.con
 
 
 
-ggsave(plot = cs_eooest, "result/figS10b_cscontribution_eooest_loessfitted.png", dpi = 600, width = 12, height = 8)
+ggsave(plot = cs_eooest, "result/cscontribution_eooest_loessfitted.png", dpi = 600, width = 12, height = 8)
 
 
 cs_eooest_cortest <-cor.test(aoo_eoo_subset$cs_proportion, 
@@ -291,8 +321,7 @@ cs_eooest_cortest
 
 cscontribution_eoo_aoo <- plot_grid(cs_aooest, cs_eooest, nrow = 2, ncol = 1,labels=c("(a)", "(b)"), label_size = 16)
 
-ggsave(plot = cscontribution_eoo_aoo, "result/figS10_cscontribution_eoo_aooestimates_loessfitted.png", width = 12, height = 15, dpi = 1200)
+ggsave(plot = cscontribution_eoo_aoo, "result/figS9_cscontribution_eoo_aooestimates_loessfitted.png", width = 12, height = 15, dpi = 1200)
 
-################################################################################
 ########## End of script for AOO and EOO correlation ###########################
 ################################################################################
