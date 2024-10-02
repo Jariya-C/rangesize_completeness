@@ -1,12 +1,12 @@
 ################################################################################
 ### AOO Estimates and Completeness without citizen science data
 ###
-### Script for estimating area of occupancy (AOO) and completeness of AOO
+### Script for estimating observed AOO and AOO completeness without citizen science data
 ### Part of the methods for the manuscript:
-### How well do we understand species’ geographic range size?: 
-### A case study of Australia’s frogs
+### How well do we understand geographic range size?: 
+### A case study of Australia’s frogs and citizen science project
 ###
-### Jariya Chanachai (jariya.chanachai@hdr.mq.edu.au)
+### 
 ################################################################################
 
 ####  Load required packages and data objects
@@ -42,7 +42,7 @@ noncs_records_grouped <- noncs_records %>% group_by(species) %>% summarise(recor
 unique_species <- unique(records$species) #203 spp
 
 ################################################################################
-### Estimating AOO completeness wiht non-CS data using Chao 1 method ####
+### Estimating AOO completeness with non-CS data using Chao 1 method ####
 
 ## covert frog_sp to spatial object
 frogs_sp <- noncs_records
@@ -138,7 +138,6 @@ non_citizen_chao_results_df$Cellsize <- as.character(non_citizen_chao_results_df
 chao_results_df_noncs <- non_citizen_chao_results_df
 
 save(chao_results_df_noncs, file = "result/aoo_chaoestimate_results_df_noncitizenscience_final.Rda")
-
 
 ################################################################################
 ### Contribution of Citizen science to AOO estimates and completeness
