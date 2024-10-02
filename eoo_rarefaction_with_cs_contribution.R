@@ -1,12 +1,17 @@
 ################################################################################
-### EOO Estimates and Completeness
+### EOO Estimates and Completeness and Citizen science contribution to EOO estimate
 ###
-### Script for estimating the extent of occurrence (EOO) and completeness of EOO
+### Script for estimating the extent of occurrence (EOO) and the completeness of EOO
+### EOO completeness is calculated from the slope of the last 20% of EOO rarefaction curve
+### Which is 1 - the slope of the last 20% of the EOO rarefaction curve
+### This script also estimates EOO without citizen science data and 
+### Quantify the contribution of CS to EOO estimate as:
+### (EOO_alldata - EOO_noncs_data)/EOO_alldata
 ### Part of the methods for the manuscript:
-### How well do we understand species’ geographic range size?: 
-### A case study of Australia’s frogs
+### How well do we understand geographic range size?: 
+### A case study of Australia’s frogs and citizen science project
 ###
-### Jariya Chanachai (jariya.chanachai@hdr.mq.edu.au)
+###
 ################################################################################
 # Load packages and data objects
 library(adehabitatHR)
@@ -140,9 +145,9 @@ aus_states <- ozmap_states
 
 species <- sort(unique(frogs_sp$species))
 
-### WARNING - This loops takes about half an hour to run
-# This loop estimates the proportion of EOO calculated with % of records
-# And plots EOO rarefaction curve as well as species distribution
+### WARNING: This loops takes about half an hour to run
+### This loop estimates the proportion of EOO calculated with certain % of records
+### And plots EOO rarefaction curve as well as species distribution
 
 start.time <- Sys.time()
 
@@ -174,22 +179,23 @@ for (k in 1:length(species)) {
   noncs_average_mcp <- data.frame(noncs_mcp_mean, noncs_mcp_sd, percentages)
   noncs_mean_mcp_tab[[species[k]]] <- noncs_average_mcp
   
-  
   # EOO Completeness
-  # %EOO80 - %EOO100
-  eoo_prop_at_80percent <- (average_mcp[16,"mcp_mean"]/average_mcp[20,"mcp_mean"])*100 - 100
-  # 1 - (%EOO80 - %EOO10)/(80-100)
+  # Percentage of EOO calculated with 80% and 100% of records (%EOO80 - %EOO100)
+  # Percentage of EOO calculated with 100% of records will be 100, thus it's %EOO80 - 100
+  eoo_prop_at_80percent <- (average_mcp[16,"mcp_mean"]/average_mcp[20,"mcp_mean"])*100 - 100 
+  # Completeness is calculated as 1 - the slope of the last 20% of EOO rarefaction:
+  # 1 - (%EOO80 - %EOO100)/(N80-N100) where  N80 and N100 is the 80 and 100 percent of records, respectively.
   mean_mcp_completeness  <- 1 - (eoo_prop_at_80percent/-20) 
   mcp_completeness_sigfig <- signif(mean_mcp_completeness, digits = 3)
   species_records <- records_by_species[records_by_species$species == species[k],]
-  allrds_position <-  average_mcp$mcp_mean[1] - average_mcp$mcp_sd[1]
-  cs_rds_position <- mcp_tab[18,19]
-  noncs_rds_position <- mcp_tab[16,19]
-  mcp_tab$slope <- ((mcp_tab[,20] - mcp_tab[,16])/mcp_tab[,20]*100)/(100-80)
-  mean_slope <- mean(mcp_tab$slope)
-  mean_slope_3sigfig <- signif(mean_slope, digits = 3)
+  #allrds_position <-  average_mcp$mcp_mean[1] - average_mcp$mcp_sd[1]
+  #cs_rds_position <- mcp_tab[18,19]
+  #noncs_rds_position <- mcp_tab[16,19]
+  #mcp_tab$slope <- ((mcp_tab[,20] - mcp_tab[,16])/mcp_tab[,20]*100)/(100-80)
+  #mean_slope <- mean(mcp_tab$slope)
+  #mean_slope_3sigfig <- signif(mean_slope, digits = 3)
   
-  #citizen science contribution
+  # Citizen science contribution
   cs_mcp_tab_na_rm <- cs_mcp_tab
   cs_mcp_tab_na_rm[is.na(cs_mcp_tab_na_rm)] <- 0
   noncs_mcp_tab_na_rm <- noncs_mcp_tab
@@ -273,9 +279,10 @@ save(mean_mcp_tab, file = "result/mean_eoo_rarefaction_list.Rda")
 save(cs_mean_mcp_tab, file = "result/citizenscience_mean_eoo_rarefaction_list.Rda")
 save(noncs_mean_mcp_tab, file = "result/noncitizenscience_mean_eoo_rarefaction_list.Rda")
 
-# Covert list to dataframe
+### Covert list to dataframe
 df_cs_contribution <- do.call(rbind.data.frame, cs.contribution_tab)
-#Add estimated EOO column "eoo_area", to df_cs_contribution dataframe
+
+# Add estimated EOO column "eoo_area", to df_cs_contribution dataframe
 df_cs_contribution <- left_join(frogs_eoo_df, df_cs_contribution, by = "species")
 save(df_cs_contribution, file = "result/eoo_completeness_and_cs_contribution_table_final.Rda")
 write.csv(df_cs_contribution, file = "result/eoo_completeness_and_cs_contribution_final.csv", row.names = FALSE)
@@ -285,8 +292,8 @@ mean_cs_contribtuion <- df_cs_contribution %>%
   get_summary_stats(mean_cs.contribution)
 
 # A tibble: 1 × 13
-#variable                 n   min   max median    q1    q3   iqr   mad  mean    sd    se    ci
-#<fct>                <dbl> <dbl> <dbl>  <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
+#variable                    n   min   max median    q1    q3   iqr   mad  mean    sd    se    ci
+#<fct>                     <dbl> <dbl> <dbl>  <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
 #  1 mean_cs.contribution   138     0   100   2.99 0.061  15.9  15.8  4.44  18.0  30.9  2.63   5.2
 
 hist_cs_eooest <- ggplot(subset(df_cs_contribution, totalrecords >=100), aes(x=mean_cs.contribution/100)) + 
@@ -301,8 +308,9 @@ hist_cs_eooest <- ggplot(subset(df_cs_contribution, totalrecords >=100), aes(x=m
         axis.text = element_text(size = 14, colour = "black"))
 
 
-ggsave(plot = hist_cs_eooest, "result/figS13_cs_contribution_to_eoo_estimate_histogram.png", width = 12, height = 8, dpi = 1200)
+ggsave(plot = hist_cs_eooest, "result/figS12_cs_contribution_to_eoo_estimate_histogram.png", width = 12, height = 8, dpi = 1200)
 
-################################################################################
+
 ######## End of script for estimating EOO estimates and completeness ###########
+########### And for calcualting CS contribution to EOO estimates ###############
 ################################################################################

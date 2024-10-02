@@ -228,6 +228,5 @@ hist_cs_aoo_combined <- plot_grid(hist_cs_aooest, hist_cs_aoocomp, nrow = 2, nco
 
 ggsave(plot = hist_cs_aoo_combined, "result/figS12_cs_contribution_to_aoo_estimate_completeness_histograms_new.png", width = 12, height = 15, dpi = 1200)
 
-################################################################################
-##End of script for estimating CS contribution to AOO estimates and completeness
+##### End of script for  CS contribution to AOO estimates and completeness #####
 ################################################################################
