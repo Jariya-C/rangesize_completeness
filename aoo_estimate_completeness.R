@@ -30,7 +30,7 @@ frogdata_sf <- st_as_sf(frogdata, coords = c("decimalLongitude", "decimalLatitud
 st_crs(frogdata_sf) <- 4326
 
 
-iucn_redlist <- read_csv("data/IUCN_Redlist_20240521_final/assessments.csv")
+iucn_redlist <- read_csv("data/IUCN_Redlist_20240521_final/assessments_20240521.csv")
 
 records <- frogdata %>% dplyr::select(c(species,decimalLongitude,decimalLatitude))
 records <- as.data.frame(records)
@@ -40,7 +40,7 @@ records_grouped <- records %>% group_by(species) %>% summarise(records = n())
 ################################################################################
 ### 1. Calculating range area:area of occupancy (AOO)
 ### using different cell sizes
-### The code in this section was adopted from:
+### The code in this chunk was adopted from:
 ### Marsh, C.J., Syfert, M.M., Aletrari, E. et al (2023). 
 ### The effect of sampling effort and methodology on range size estimates of poorly-recorded species for IUCN Red List assessments. 
 ### Biodiversity and Conservation 32, 1105–1123. https://doi.org/10.1007/s10531-023-02543-9
@@ -345,7 +345,7 @@ ggsave(plot=comp_vs_n, "result/completeness_minimumcutoff_100record.png", width 
 # Combine boxplot and point graph
 aoo_completeness_plots <- plot_grid(chao_aoo_boxplot, comp_vs_n, nrow = 2, ncol = 1,labels=c("(a)", "(b)"), label_size = 16)
 
-ggsave(plot = aoo_completeness_plots, "result/figS1_aoo_and_completeness_boxxplot_and_pointgraph.png", width = 12, height = 15, dpi = 1200)
+ggsave(plot = aoo_completeness_plots, "result/figS2_aoo_and_completeness_boxplot_and_pointgraph.png", width = 12, height = 15, dpi = 1200)
 
 ### Monotonic relationship between AOO completeness and no of records was observed for species with >= 100 records
 ### AOO completeness increases with cell size
@@ -353,6 +353,9 @@ ggsave(plot = aoo_completeness_plots, "result/figS1_aoo_and_completeness_boxxplo
 
 chao_results_df_withredlist <- chao_results_df
 
+### Group species into: (1) threatened and (2) not threatened based on IUCN Redlist status
+### Species that are critically endangered, endangered and vulnerable are considered threatened.
+### The rest are considered not threatened
 
 chao_results_df_withredlist$redlistID <-chao_results_df_withredlist$redlistCategory 
 chao_results_df_withredlist$redlistID <- gsub(" ", "_", chao_results_df_withredlist$redlistID)
