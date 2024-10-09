@@ -70,37 +70,37 @@ This study involves threatened frog species of Australia. We obtained species oc
 
 This workflow provides a clear guideline on data collection, processing and analysis and the following steps can be followed to run the code.
 
-1.  **Download occurrence data (optional):**
+**1.**  **Download occurrence data (optional):**
 
 -   Open the `download_frogrecords.R` script to download frog species occurrence data from the [Atlas of Living Australia](https://www.ala.org.au/).
 -   This code will help to generate a dataset called `ala_frog_occurrences_raw_20231017.Rda`.
 -   *(Note: This dataset is already provided, so downloading is optional.)*
 -   **Imporant:** The ALA dataset includes FrogID data with sensitive records generalised/excluded. You do not need to download additional data from [FrogID](https://www.frogid.net.au/explore). However, this dataset is slightly different from the actual dataset used for the analyse which includes sensitive species data from FrogID.
 
-2.  **Data cleaning (optional):**
+**2.**  **Data cleaning (optional):**
 
 -   Open `data_cleaning_part1.R` for initial data cleaning.
 -   Then, open `data_cleaning_part2.R` to complete data cleaning.
 -   The clean dataset is called `frog_occ_cleaned_final_with_datatype_20240702.Rda`
 -   *(Note: The clean dataset is already provided, so these steps are optional.)*
 
-3.  **Assess data trends and biases:**
+**3.**  **Assess data trends and biases:**
 
 -   Open and run `assess_cleandata.R` to evaluate trends and biases in the clean dataset
 
-4.  **AOO estimates and completeness:**
+**4.**  **AOO estimates and completeness:**
 
 -   Open and run `aoo_estimate_completeness.R` to estimate AOO and the completeness within AOO estimates for all records in clean dataset.
 
-5.  **Citizen science contribution to AOO estimates and completeness:**
+**5.**  **Citizen science contribution to AOO estimates and completeness:**
 
 -   Open and run `aoo_cs_contribution.R` to quantify citizen science contribution to AOO estimates and completeness.
 
-6.  **EOO estimate and completeness and citizen science contribution:**
+**6.**  **EOO estimate and completeness and citizen science contribution:**
 
 -   Open and run `eoo_rarefaction_with_cs_contribution.R` to estimate EOO,completeness in EOO, and assess citizen science contribution to EOO estimates.
 
-7.  **Conduct further analysis:**
+**7.**  **Conduct further analysis:**
 
 -   Open and run `aoo_eoo_further_analysis.R` for additional analysis.
 -   This includes comparing AOO and EOO completeness between threatened and non-threatened species, assessing the relationship between AOO and EOO completeness and assessing the relationship between the proportion of citizen science records and the proportion of citizen science contribution.
